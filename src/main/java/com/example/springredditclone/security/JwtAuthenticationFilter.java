@@ -28,12 +28,13 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
     // Logic xác thực
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
-        String jwt = getJwtFromRequest(request);  //Gọi method getJwtFromRequest bên dưới để lấy Jwt
+        String jwt = getJwtFromRequest(request);  //Gọi method getJwtFromRequest bên dưới để lấy Jwt từ request
 
         if (StringUtils.hasText(jwt) && jwtProvider.validateToken(jwt)) {
             String username = jwtProvider.getUsernameFromJWT(jwt); //Sau khi JWT được xác thực, lấy tên người dùng từ mã Jwt bằng cách gọi method getUsernameFromJWT()
 
             UserDetails userDetails = userDetailsService.loadUserByUsername(username);  //Truy xuất User và lưu trữ bên trong SecurityContext
+            // Nếu User hợp lệ thì sét thông tin cho Security Context
             UsernamePasswordAuthenticationToken authentication = new UsernamePasswordAuthenticationToken(userDetails,
                     null, userDetails.getAuthorities());
             authentication.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
@@ -46,6 +47,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
     // Lấy Jwt ??
     private String getJwtFromRequest(HttpServletRequest request) {
         String bearerToken = request.getHeader("Authorization");
+        // Kiểm tra xem header Authorization có chứa thông tin Jwt không
         if (StringUtils.hasText(bearerToken) && bearerToken.startsWith("Bearer ")) {
             return bearerToken.substring(7);
         }

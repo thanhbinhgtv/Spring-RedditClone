@@ -19,6 +19,7 @@ import static java.util.Collections.singletonList;
 @Service
 @AllArgsConstructor
 // Lớp này lưu trữ thông tin người dùng khi họ login vào hệ thống
+// Được sử dụng bởi Spring Security mỗi lần người dùng đăng nhập vào hệ thống
 public class UserDetailsServiceImpl implements UserDetailsService {
     private final UserRepository userRepository;
 
@@ -27,7 +28,6 @@ public class UserDetailsServiceImpl implements UserDetailsService {
     // Lớp này Override phương thức loadUserByUsername(), được Spring Security sử dụng để tìm nạp chi tiết người dùng
     public UserDetails loadUserByUsername(String username) {
         // Đầu tiên query xuống csdl xem có username này không
-        // Lấy tên người dùng làm đầu vào, trả về đối tượng chi tiết người dùng
         Optional<User> userOptional = userRepository.findByUsername(username);
         // Nếu không có thì thông báo lỗi
         User user = userOptional.orElseThrow(() -> new UsernameNotFoundException("No user " + "Found with username : " + username));

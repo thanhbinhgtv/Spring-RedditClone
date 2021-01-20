@@ -89,14 +89,16 @@ public class AuthService {
 
 	// Login ???
     public AuthenticationResponese login(LoginRequest loginRequest) {
-		// Đóng gói tên người dùng và mật khẩu do người dùng cung cấp như một phần của yêu cầu đăng nhập
+		// Xác thực username và password xem user nào đăng login
+		// AuthenticationManager đảm nhiệm phần xác thực khi sử dụng Spring Security
 		Authentication authenticate = authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(loginRequest.getUsername(), loginRequest.getPassword()));
+		// Set thông tin authentication vào Security Context, Nếu không xảy ra exception tức là thông tin hợp lệ
 		SecurityContextHolder.getContext().setAuthentication(authenticate);
-		String token = jwtProvider.generateToken(authenticate);			//Gọi method tạo Jwt - nhận về mã Jwt
+		String jwt = jwtProvider.generateToken(authenticate);			//Tạo Jwt cho User đăng login
 		return AuthenticationResponese.builder()
-				.authenticationToken(token)
-				.refreshToken(refreshTokenService.generateRefreshToken().getToken())	//Tạo mới RefreshToken- Truyền vào mã Refresh token mới
-				.expiresAt(Instant.now().plusMillis(jwtProvider.getJwtExpirationInMillis()))
+				.authenticationToken(jwt)
+				.refreshToken(refreshTokenService.generateRefreshToken().getToken())	//Tạo mới RefreshToken - Truyền vào mã Refresh token mới
+				.expiresAt(Instant.now().plusMillis(jwtProvider.getJwtExpirationInMillis()))	//Set time hết hạn
 				.username(loginRequest.getUsername())
 				.build();
     }
@@ -112,12 +114,12 @@ public class AuthService {
 				.orElseThrow(() -> new UsernameNotFoundException("User name not found - " + principal.getUsername()));
 	}
 
-	//
+	//	Tạo Jwt mới mỗi khi hết hạn
 	public AuthenticationResponese refreshToken(RefreshTokenRequest refreshTokenRequest) {
 		refreshTokenService.validateRefreshToken(refreshTokenRequest.getRefreshToken());
-		String token = jwtProvider.generateTokenWithUserName(refreshTokenRequest.getUsername());
+		String jwt = jwtProvider.generateTokenWithUserName(refreshTokenRequest.getUsername());
 		return AuthenticationResponese.builder()
-				.authenticationToken(token)
+				.authenticationToken(jwt)
 				.refreshToken(refreshTokenRequest.getRefreshToken())
 				.expiresAt(Instant.now().plusMillis(jwtProvider.getJwtExpirationInMillis()))
 				.username(refreshTokenRequest.getUsername())

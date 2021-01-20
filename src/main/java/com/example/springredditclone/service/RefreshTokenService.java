@@ -32,7 +32,7 @@ public class RefreshTokenService {
         refreshTokenRepository.findByToken(token).orElseThrow(() -> new SpringRedditException("Invalid refresh Token"));
     }
 
-    // Xóa mã Token làm mới khỏi csdl khi logout
+    // Xóa mã RefreshToken khỏi csdl khi logout
     public void deleteRefreshToken(String token) {
         refreshTokenRepository.deleteByToken(token);
     }

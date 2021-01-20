@@ -30,25 +30,25 @@ public class JwtProvider {
     @PostConstruct
     public void init() {
         try {
-            keyStore = KeyStore.getInstance("JKS");
-            InputStream resourceAsStream = getClass().getResourceAsStream("/springblog.jks"); //Lấy file này trong resources
+            keyStore = KeyStore.getInstance("JKS"); // Sử dụng kho khóa JKS
+            InputStream resourceAsStream = getClass().getResourceAsStream("/springblog.jks"); //Đọc file này trong resources
             keyStore.load(resourceAsStream, "secret".toCharArray());
         } catch (KeyStoreException | CertificateException | NoSuchAlgorithmException | IOException e) {
             throw new SpringRedditException("Exception occurred while loading keystore");
         }
-
     }
+
     //Cấp mã Jwt - Set time hết hạn Jwt
     public String generateToken(Authentication authentication) {
         org.springframework.security.core.userdetails.User principal = (User) authentication.getPrincipal();
         return Jwts.builder()
                 .setSubject(principal.getUsername())
                 .setIssuedAt(from(Instant.now()))     // New ??
-                .signWith(getPrivateKey())  //signWith đòi hỏi phải lấy một cái gọi là privateKey
+                .signWith(getPrivateKey())
                 .setExpiration(Date.from(Instant.now().plusMillis(jwtExpirationInMillis)))  //Đặt time hết hạn Jwt
                 .compact();
     }
-    // Tạo mã token với userName
+    // Tạo mã Jwt với userName (Dùng cho việc refreshToken khi hết hạn)
     public String generateTokenWithUserName(String username) {
         return Jwts.builder()
                 .setSubject(username)
@@ -58,9 +58,10 @@ public class JwtProvider {
                 .compact();
     }
 
+    // Khóa PrivateKey để đăng ký mã Jwt
     private PrivateKey getPrivateKey() {
         try {
-            return (PrivateKey) keyStore.getKey("springblog", "secret".toCharArray());
+            return (PrivateKey) keyStore.getKey("springblog", "secret".toCharArray());  //Tên và Password của khóa
         } catch (KeyStoreException | NoSuchAlgorithmException | UnrecoverableKeyException e) {
             throw new SpringRedditException("Exception occured while retrieving public key from keystore");
         }
@@ -71,6 +72,7 @@ public class JwtProvider {
         return true;
     }
 
+    // Khóa PublicKey để xác thực mã Jwt
     private PublicKey getPublickey() {
         try {
             return keyStore.getCertificate("springblog").getPublicKey();
@@ -79,6 +81,7 @@ public class JwtProvider {
         }
     }
 
+    // Lấy thông tin User từ Jwt
     public String getUsernameFromJWT(String token){
         Claims claims = parser()
                 .setSigningKey(getPublickey())

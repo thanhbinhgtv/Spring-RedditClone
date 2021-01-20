@@ -31,13 +31,13 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
         return super.authenticationManagerBean();
     }
 
-    //Cấu hình Security
+    //Cấu hình Spring Security
     @Override
     public void configure(HttpSecurity httpSecurity) throws Exception {
         httpSecurity.cors().and().csrf().disable()   //Disable tính năng chống tấn công
                 .authorizeRequests()
                 .antMatchers("/api/auth/**")
-                .permitAll()            //Cho phép tất cả mọi người truy cập vào địa chỉ “/api/auth/**” (Request không cần phải xác thực)
+                .permitAll()          //Cho phép tất cả mọi người truy cập vào địa chỉ “/api/auth/**” (Request không cần phải xác thực)
                 .antMatchers(HttpMethod.GET, "/api/subreddit")
                 .permitAll()
                 .antMatchers(HttpMethod.GET, "/api/posts/")
@@ -67,9 +67,8 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
     // username này là ai trong hệ thống, có quyền gì ...
     @Autowired
     public void configureGlobal(AuthenticationManagerBuilder authenticationManagerBuilder) throws Exception {
-        // Gọi userDetailsService trong bước tiếp theo (UserDetailsServiceImpl)
         authenticationManagerBuilder.userDetailsService(userDetailsService)
-                .passwordEncoder(passwordEncoder());    //Sử dụng PasswordEncoder mã hóa password người dùng
+                .passwordEncoder(passwordEncoder());
     }
 
     //PasswordEncoder để Spring Security sử dụng mã hóa mật khẩu người dùng

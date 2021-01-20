@@ -26,7 +26,7 @@ public class AuthController {
 	// Nhận thông tin người dùng đăng ký
 	@PostMapping("/signup")
 	public ResponseEntity<String> signup(@RequestBody RegisterRequest registerRequest) {
-		authService.signup(registerRequest);	//Gửi Thông tin người dùng đến AuthService.signup
+		authService.signup(registerRequest);
 		return new ResponseEntity<>("User Register Successful", OK);
 	}
 
